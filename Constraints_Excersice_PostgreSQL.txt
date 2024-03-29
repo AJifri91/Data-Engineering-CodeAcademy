@@ -1,0 +1,65 @@
+SELECT * FROM parts LIMIT(10);
+
+ALTER TABLE parts
+ADD UNIQUE(code);
+
+ALTER TABLE parts
+ALTER COLUMN code SET NOT NULL;
+
+UPDATE parts
+SET description =
+    CASE 
+        WHEN manufacturer_id = 4 THEN 'TBD'
+        WHEN manufacturer_id = 6 THEN 'NA'
+        ELSE 'No Value'
+    END
+WHERE TRIM(description) = '';
+SELECT * FROM parts ORDER BY id;
+
+ALTER TABLE parts
+ALTER COLUMN description SET NOT NULL;
+
+INSERT INTO parts
+VALUES(54,'Front Light', 'V1-009', 9);
+
+ALTER TABLE reorder_options
+ALTER COLUMN price_usd SET NOT NULL;
+
+ALTER TABLE reorder_options
+ALTER COLUMN quantity SET NOT NULL;
+
+ALTER TABLE reorder_options
+ADD CHECK(price_usd > 0 AND quantity > 0);
+
+ALTER TABLE reorder_options
+ADD CHECK(price_usd/quantity BETWEEN 0.02 AND 25);
+
+ALTER TABLE parts
+ADD PRIMARY KEY (id);
+
+ALTER TABLE reorder_options
+ADD FOREIGN KEY (part_id) REFERENCES parts (id);
+
+ALTER TABLE locations
+ADD CHECK(qty > 0);
+
+ALTER TABLE locations
+ADD UNIQUE(part_id, location);
+
+ALTER TABLE locations
+ADD FOREIGN KEY (part_id) REFERENCES parts(id);
+
+ALTER TABLE parts
+ADD FOREIGN KEY(manufacturer_id) REFERENCES manufacturers(id);
+
+INSERT INTO manufacturers
+VALUES(11, 'Pip-NNC Industrial');
+
+UPDATE parts
+SET manufacturer_id = 11
+WHERE manufacturer_id = (SELECT id
+                        FROM manufacturers
+                        WHERE TRIM(name) = 'Pip Industrial')
+OR manufacturer_id = (SELECT id
+                        FROM manufacturers
+                        WHERE TRIM(name) = 'NNC Manufacturing');
